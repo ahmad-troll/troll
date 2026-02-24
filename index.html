@@ -30,7 +30,6 @@
             100% { transform: scale(1.1); opacity: 0.8; }
         }
 
-        /* Moved the message CSS to have less margin and a minimum height to prevent layout jumps */
         #message { margin: 20px 0; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px currentColor; min-height: 40px; }
         
         .button-container { position: relative; height: 300px; margin-top: 20px; }
@@ -83,6 +82,7 @@
         let timeRemaining = 10;
         let countdownInterval, gifTimeout, moveYesInterval;
         
+        // The code now looks exactly for your "dramatic.mp3" file
         let dramaticAudio = new Audio('dramatic.mp3');
         dramaticAudio.loop = true;
 
@@ -120,7 +120,7 @@
                 yesBtn.style.left = Math.max(0, Math.random() * maxX) + 'px';
                 yesBtn.style.top = Math.max(150, Math.random() * maxY) + 'px';
                 yesBtn.style.transform = 'none'; 
-            }, 750);
+            }, 500);
         }
 
         function answerYes() {
