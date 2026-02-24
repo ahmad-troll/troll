@@ -2,75 +2,126 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>سؤال مهم</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
             text-align: center; 
-            margin-top: 20vh; 
+            margin-top: 15vh; 
             background-color: #f0f0f0; 
+            overflow: hidden; /* Verhindert das Scrollen, wenn der Button springt */
         }
-        h1 { color: #333; font-size: 3em; }
+        h1 { color: #333; font-size: 2.5em; padding: 0 15px; }
+        .button-container { position: relative; height: 300px; margin-top: 40px; }
         button { 
             font-size: 24px; 
             padding: 15px 40px; 
-            margin: 20px; 
             cursor: pointer; 
             border: none; 
             border-radius: 10px; 
             font-weight: bold;
+            transition: transform 0.2s; /* Sorgt für weiches Wachsen des Ja-Buttons */
         }
-        #btn-yes { background-color: #4CAF50; color: white; }
-        #btn-no { background-color: #f44336; color: white; }
+        #btn-yes { background-color: #4CAF50; color: white; margin-bottom: 20px; }
+        #btn-no { background-color: #f44336; color: white; position: absolute; left: 50%; transform: translateX(-50%); }
         #message { 
-            margin-top: 30px; 
-            font-size: 30px; 
+            margin-top: 50px; 
+            font-size: 24px; 
             font-weight: bold; 
         }
+        
+        /* CSS Wackel-Animation (Screen Shake) */
+        @keyframes shake {
+            0% { transform: translate(2px, 2px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(2deg); }
+            40% { transform: translate(3px, -2px) rotate(-2deg); }
+            60% { transform: translate(-3px, 2px) rotate(0deg); }
+            80% { transform: translate(3px, -2px) rotate(2deg); }
+            100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+        .shake { animation: shake 0.4s; }
     </style>
 </head>
 <body>
 
     <h1>هل تحب إيمان؟</h1>
     
-    <button id="btn-yes" onclick="answerYes()">نعم</button>
-    <button id="btn-no" onclick="answerNo()">لا</button>
+    <div class="button-container">
+        <button id="btn-yes" onclick="answerYes()">نعم</button>
+        <br>
+        <button id="btn-no" ontouchstart="moveNoButton(event)" onmouseover="moveNoButton(event)">لا</button>
+    </div>
     
     <div id="message"></div>
 
     <script>
-        // Set up the browser's internal audio system for the error sound
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioCtx = null;
+        let yesScale = 1;
+
+        // Smartphones erfordern eine Interaktion, bevor Audio erlaubt ist
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
 
         function playErrorSound() {
+            initAudio();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             
-            // Create a harsh, low buzz sound
             oscillator.type = 'sawtooth';
             oscillator.frequency.setValueAtTime(100, audioCtx.currentTime); 
-            
-            // Set volume
             gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
             
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             
-            // Play for 0.4 seconds
             oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.4); 
+            oscillator.stop(audioCtx.currentTime + 0.3); 
         }
 
         function answerYes() {
             document.getElementById('message').innerText = 'غصباً عنك! 😎';
             document.getElementById('message').style.color = '#4CAF50';
+            document.getElementById('btn-no').style.display = 'none'; // Versteckt den Nein-Button
         }
 
-        function answerNo() {
+        function moveNoButton(e) {
+            e.preventDefault(); // Verhindert, dass das Handy den Klick trotzdem registriert
+            
             playErrorSound();
+            
+            const btn = document.getElementById('btn-no');
+            const yesBtn = document.getElementById('btn-yes');
+            
+            // Wackel-Effekt auslösen
+            document.body.classList.remove('shake');
+            void document.body.offsetWidth; 
+            document.body.classList.add('shake');
+            
+            // Fehlermeldung anzeigen
             document.getElementById('message').innerText = 'خطأ... حاول مرة أخرى!';
             document.getElementById('message').style.color = '#f44336';
+            
+            // Berechne zufällige Position innerhalb des sichtbaren Handy-Bildschirms
+            const maxX = window.innerWidth - btn.offsetWidth;
+            const maxY = window.innerHeight - btn.offsetHeight - 100;
+            const x = Math.max(0, Math.random() * maxX);
+            const y = Math.max(150, Math.random() * maxY); // Bleibt unterhalb des Textes
+            
+            btn.style.position = 'fixed';
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+            btn.style.transform = 'none'; // Setzt die ursprüngliche Zentrierung zurück
+            
+            // "Ja"-Button wird um 20% größer bei jedem Fehlversuch
+            yesScale += 0.2;
+            yesBtn.style.transform = `scale(${yesScale})`;
         }
     </script>
 
