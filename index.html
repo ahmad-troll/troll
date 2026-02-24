@@ -10,10 +10,20 @@
             text-align: center; 
             margin-top: 15vh; 
             background-color: #f0f0f0; 
-            overflow: hidden; /* Verhindert das Scrollen, wenn der Button springt */
+            overflow: hidden; 
         }
         h1 { color: #333; font-size: 2.5em; padding: 0 15px; }
-        .button-container { position: relative; height: 300px; margin-top: 40px; }
+        
+        #timer {
+            display: none;
+            color: red;
+            font-size: 40px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        .button-container { position: relative; height: 300px; margin-top: 20px; }
         button { 
             font-size: 24px; 
             padding: 15px 40px; 
@@ -21,17 +31,21 @@
             border: none; 
             border-radius: 10px; 
             font-weight: bold;
-            transition: transform 0.2s; /* Sorgt für weiches Wachsen des Ja-Buttons */
+            transition: transform 0.2s; 
         }
-        #btn-yes { background-color: #4CAF50; color: white; margin-bottom: 20px; }
-        #btn-no { background-color: #f44336; color: white; position: absolute; left: 50%; transform: translateX(-50%); }
-        #message { 
-            margin-top: 50px; 
-            font-size: 24px; 
-            font-weight: bold; 
-        }
+        #btn-yes { background-color: #4CAF50; color: white; margin-bottom: 20px; position: relative; z-index: 10; }
+        #btn-no { background-color: #f44336; color: white; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; }
+        #message { margin-top: 50px; font-size: 24px; font-weight: bold; }
         
-        /* CSS Wackel-Animation (Screen Shake) */
+        #gif-screen {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black;
+            z-index: 9999;
+        }
+        /* This line forces the GIF to stretch and cover the entire screen */
+        #gif-screen img { width: 100vw; height: 100vh; object-fit: cover; }
+        
         @keyframes shake {
             0% { transform: translate(2px, 2px) rotate(0deg); }
             20% { transform: translate(-3px, 0px) rotate(2deg); }
@@ -45,21 +59,31 @@
 </head>
 <body>
 
-    <h1>هل تحب إيمان؟</h1>
-    
-    <div class="button-container">
-        <button id="btn-yes" onclick="answerYes()">نعم</button>
-        <br>
-        <button id="btn-no" ontouchstart="moveNoButton(event)" onmouseover="moveNoButton(event)">لا</button>
+    <div id="gif-screen">
+        <img src="goofy-silly.gif" alt="Troll GIF">
     </div>
-    
-    <div id="message"></div>
+
+    <div id="main-content">
+        <div id="timer">10</div>
+        <h1>هل تحب إيمان؟</h1>
+        
+        <div class="button-container">
+            <button id="btn-yes" onclick="answerYes()">نعم</button>
+            <br>
+            <button id="btn-no" ontouchstart="moveNoButton(event)" onmouseover="moveNoButton(event)">لا</button>
+        </div>
+        
+        <div id="message"></div>
+    </div>
 
     <script>
         let audioCtx = null;
         let yesScale = 1;
+        let timerStarted = false;
+        let timeRemaining = 10;
+        let countdownInterval;
+        let gifTimeout;
 
-        // Smartphones erfordern eine Interaktion, bevor Audio erlaubt ist
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -86,40 +110,62 @@
         }
 
         function answerYes() {
+            if (timerStarted) {
+                clearInterval(countdownInterval);
+                clearTimeout(gifTimeout);
+                document.getElementById('timer').style.display = 'none';
+            }
+
             document.getElementById('message').innerText = 'غصباً عنك! 😎';
             document.getElementById('message').style.color = '#4CAF50';
-            document.getElementById('btn-no').style.display = 'none'; // Versteckt den Nein-Button
+            document.getElementById('btn-no').style.display = 'none'; 
         }
 
         function moveNoButton(e) {
-            e.preventDefault(); // Verhindert, dass das Handy den Klick trotzdem registriert
+            e.preventDefault(); 
             
+            if (!timerStarted) {
+                timerStarted = true;
+                const timerElement = document.getElementById('timer');
+                timerElement.style.display = 'block';
+                
+                countdownInterval = setInterval(() => {
+                    timeRemaining--;
+                    if (timeRemaining > 0) {
+                        timerElement.innerText = timeRemaining;
+                    } else {
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
+
+                gifTimeout = setTimeout(() => {
+                    document.getElementById('main-content').style.display = 'none';
+                    document.getElementById('gif-screen').style.display = 'block';
+                }, 10000);
+            }
+
             playErrorSound();
             
             const btn = document.getElementById('btn-no');
             const yesBtn = document.getElementById('btn-yes');
             
-            // Wackel-Effekt auslösen
             document.body.classList.remove('shake');
             void document.body.offsetWidth; 
             document.body.classList.add('shake');
             
-            // Fehlermeldung anzeigen
             document.getElementById('message').innerText = 'خطأ... حاول مرة أخرى!';
             document.getElementById('message').style.color = '#f44336';
             
-            // Berechne zufällige Position innerhalb des sichtbaren Handy-Bildschirms
             const maxX = window.innerWidth - btn.offsetWidth;
             const maxY = window.innerHeight - btn.offsetHeight - 100;
             const x = Math.max(0, Math.random() * maxX);
-            const y = Math.max(150, Math.random() * maxY); // Bleibt unterhalb des Textes
+            const y = Math.max(150, Math.random() * maxY); 
             
             btn.style.position = 'fixed';
             btn.style.left = x + 'px';
             btn.style.top = y + 'px';
-            btn.style.transform = 'none'; // Setzt die ursprüngliche Zentrierung zurück
+            btn.style.transform = 'none'; 
             
-            // "Ja"-Button wird um 20% größer bei jedem Fehlversuch
             yesScale += 0.2;
             yesBtn.style.transform = `scale(${yesScale})`;
         }
