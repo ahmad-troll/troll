@@ -16,7 +16,7 @@
             overflow: hidden; 
         }
         
-        h1 { font-size: 3em; padding: 0 15px; text-shadow: 0 0 20px rgba(255, 0, 0, 0.9); }
+        h1 { font-size: 3em; padding: 0 15px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255, 0, 0, 0.9); }
         
         #timer {
             display: none; color: #ff3333; font-size: 55px; font-weight: bold;
@@ -30,12 +30,15 @@
             100% { transform: scale(1.1); opacity: 0.8; }
         }
 
-        .button-container { position: relative; height: 300px; margin-top: 30px; }
+        /* Moved the message CSS to have less margin and a minimum height to prevent layout jumps */
+        #message { margin: 20px 0; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px currentColor; min-height: 40px; }
+        
+        .button-container { position: relative; height: 300px; margin-top: 20px; }
         
         button { 
             font-size: 26px; padding: 15px 45px; cursor: pointer; 
             border: none; border-radius: 8px; font-weight: bold;
-            transition: box-shadow 0.2s; /* Removed transform transition so it jumps instantly */
+            transition: box-shadow 0.2s; 
         }
         
         #btn-yes { 
@@ -49,8 +52,6 @@
             color: white; position: absolute; top: 100px; left: 50%; transform: translateX(-50%); z-index: 5; 
             box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
         }
-        
-        #message { margin-top: 150px; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px currentColor; }
         
         #gif-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -67,48 +68,26 @@
 
     <div id="main-content">
         <div id="timer">10</div>
-        <h1>هل تحب إيمان؟</h1>
+        <h1 id="question-text">هل تحب إيمان؟</h1>
         
-        <div class="button-container">
+        <div id="message"></div>
+        
+        <div class="button-container" id="buttons">
             <button id="btn-yes" onclick="answerYes()">نعم</button>
             <button id="btn-no" onclick="triggerTrap()">لا</button>
         </div>
-        
-        <div id="message"></div>
     </div>
 
     <script>
-        let audioCtx = null;
         let timerStarted = false;
         let timeRemaining = 10;
-        let countdownInterval, gifTimeout, moveYesInterval, sirenInterval;
-
-        function playDramaticSiren() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // Creates a looping alarm/siren effect
-            sirenInterval = setInterval(() => {
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(400, audioCtx.currentTime); 
-                oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
-                
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.5); 
-            }, 600);
-        }
+        let countdownInterval, gifTimeout, moveYesInterval;
+        
+        let dramaticAudio = new Audio('dramatic.mp3');
+        dramaticAudio.loop = true;
 
         function triggerTrap() {
-            if (timerStarted) return; // Prevent multiple triggers
+            if (timerStarted) return; 
             timerStarted = true;
             
             document.getElementById('message').innerText = 'تحذير! النظام في خطر!';
@@ -117,25 +96,21 @@
             const timerElement = document.getElementById('timer');
             timerElement.style.display = 'block';
             
-            // Start the dramatic music/siren
-            playDramaticSiren();
+            dramaticAudio.play().catch(e => console.log("Audio blockiert:", e));
             
-            // Start the 10 second countdown
             countdownInterval = setInterval(() => {
                 timeRemaining--;
                 timerElement.innerText = timeRemaining;
                 if (timeRemaining <= 0) clearInterval(countdownInterval);
             }, 1000);
 
-            // Show GIF after 10 seconds
             gifTimeout = setTimeout(() => {
                 clearInterval(moveYesInterval);
-                clearInterval(sirenInterval);
+                dramaticAudio.pause(); 
                 document.getElementById('main-content').style.display = 'none';
                 document.getElementById('gif-screen').style.display = 'block';
             }, 10000);
 
-            // Make the "Yes" button jump around every 0.75 seconds (750 milliseconds)
             const yesBtn = document.getElementById('btn-yes');
             moveYesInterval = setInterval(() => {
                 const maxX = window.innerWidth - yesBtn.offsetWidth;
@@ -144,31 +119,32 @@
                 yesBtn.style.position = 'fixed';
                 yesBtn.style.left = Math.max(0, Math.random() * maxX) + 'px';
                 yesBtn.style.top = Math.max(150, Math.random() * maxY) + 'px';
-                yesBtn.style.transform = 'none'; // Removes centering transform so it places correctly
+                yesBtn.style.transform = 'none'; 
             }, 750);
         }
 
         function answerYes() {
-            // Stop everything if they manage to click it
             if (timerStarted) {
                 clearInterval(countdownInterval);
                 clearTimeout(gifTimeout);
                 clearInterval(moveYesInterval);
-                clearInterval(sirenInterval);
+                dramaticAudio.pause(); 
                 document.getElementById('timer').style.display = 'none';
             }
 
-            document.getElementById('message').innerText = 'غصباً عنك! 😎';
-            document.getElementById('message').style.color = '#4CAF50';
-            
-            // Clean up the UI
-            document.getElementById('btn-no').style.display = 'none'; 
-            
-            // Center the Yes button again
-            const yesBtn = document.getElementById('btn-yes');
-            yesBtn.style.position = 'static';
-            yesBtn.style.transform = 'none';
-            yesBtn.style.margin = '0 auto';
+            document.getElementById('question-text').style.display = 'none';
+            document.getElementById('buttons').style.display = 'none';
+
+            const msg = document.getElementById('message');
+            msg.innerText = 'غصباً عنك! 😎';
+            msg.style.color = '#4CAF50';
+            msg.style.fontSize = '60px';
+            msg.style.position = 'absolute';
+            msg.style.top = '50%';
+            msg.style.left = '50%';
+            msg.style.transform = 'translate(-50%, -50%)';
+            msg.style.margin = '0';
+            msg.style.width = '100%';
         }
     </script>
 
