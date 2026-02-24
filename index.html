@@ -6,36 +6,72 @@
     <title>سؤال مهم</title>
     <style>
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
-            margin-top: 15vh; 
-            background-color: #f0f0f0; 
+            margin: 0; 
+            padding-top: 15vh; 
+            /* Dramatic dark red to black vignette background */
+            background: radial-gradient(circle, #2a0000 0%, #000000 100%); 
+            color: white;
+            height: 100vh;
             overflow: hidden; 
         }
-        h1 { color: #333; font-size: 2.5em; padding: 0 15px; }
+        
+        h1 { 
+            font-size: 3em; 
+            padding: 0 15px; 
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.9); /* Glowing red aura */
+            letter-spacing: 1px;
+        }
         
         #timer {
             display: none;
-            color: red;
-            font-size: 40px;
+            color: #ff3333;
+            font-size: 55px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-family: monospace;
+            text-shadow: 0 0 20px red, 0 0 40px darkred;
+            animation: pulse 0.8s infinite alternate; /* Alarm pulse effect */
         }
 
-        .button-container { position: relative; height: 300px; margin-top: 20px; }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .button-container { position: relative; height: 300px; margin-top: 30px; }
+        
         button { 
-            font-size: 24px; 
-            padding: 15px 40px; 
+            font-size: 26px; 
+            padding: 15px 45px; 
             cursor: pointer; 
             border: none; 
-            border-radius: 10px; 
+            border-radius: 8px; 
             font-weight: bold;
-            transition: transform 0.2s; 
+            transition: transform 0.2s, box-shadow 0.2s; 
         }
-        #btn-yes { background-color: #4CAF50; color: white; margin-bottom: 20px; position: relative; z-index: 10; }
-        #btn-no { background-color: #f44336; color: white; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; }
-        #message { margin-top: 50px; font-size: 24px; font-weight: bold; }
+        
+        #btn-yes { 
+            background: linear-gradient(45deg, #1b5e20, #4CAF50); 
+            color: white; 
+            margin-bottom: 20px; 
+            position: relative; 
+            z-index: 10; 
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        #btn-no { 
+            background: linear-gradient(45deg, #b71c1c, #f44336); 
+            color: white; 
+            position: absolute; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 5; 
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+        }
+        
+        #message { margin-top: 50px; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px currentColor; }
         
         #gif-screen {
             display: none;
@@ -43,18 +79,18 @@
             background-color: black;
             z-index: 9999;
         }
-        /* This line forces the GIF to stretch and cover the entire screen */
         #gif-screen img { width: 100vw; height: 100vh; object-fit: cover; }
         
+        /* More violent screen shake */
         @keyframes shake {
-            0% { transform: translate(2px, 2px) rotate(0deg); }
-            20% { transform: translate(-3px, 0px) rotate(2deg); }
-            40% { transform: translate(3px, -2px) rotate(-2deg); }
-            60% { transform: translate(-3px, 2px) rotate(0deg); }
-            80% { transform: translate(3px, -2px) rotate(2deg); }
+            0% { transform: translate(3px, 3px) rotate(0deg); }
+            20% { transform: translate(-4px, 0px) rotate(3deg); }
+            40% { transform: translate(4px, -3px) rotate(-3deg); }
+            60% { transform: translate(-4px, 3px) rotate(0deg); }
+            80% { transform: translate(4px, -3px) rotate(3deg); }
             100% { transform: translate(0px, 0px) rotate(0deg); }
         }
-        .shake { animation: shake 0.4s; }
+        .shake { animation: shake 0.3s; }
     </style>
 </head>
 <body>
@@ -98,15 +134,16 @@
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             
+            // Lowered frequency for a more intimidating, deeper buzzer sound
             oscillator.type = 'sawtooth';
-            oscillator.frequency.setValueAtTime(100, audioCtx.currentTime); 
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            oscillator.frequency.setValueAtTime(70, audioCtx.currentTime); 
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
             
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             
             oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.3); 
+            oscillator.stop(audioCtx.currentTime + 0.4); 
         }
 
         function answerYes() {
@@ -154,12 +191,12 @@
             document.body.classList.add('shake');
             
             document.getElementById('message').innerText = 'خطأ... حاول مرة أخرى!';
-            document.getElementById('message').style.color = '#f44336';
+            document.getElementById('message').style.color = '#ff5252';
             
             const maxX = window.innerWidth - btn.offsetWidth;
             const maxY = window.innerHeight - btn.offsetHeight - 100;
             const x = Math.max(0, Math.random() * maxX);
-            const y = Math.max(150, Math.random() * maxY); 
+            const y = Math.max(180, Math.random() * maxY); 
             
             btn.style.position = 'fixed';
             btn.style.left = x + 'px';
