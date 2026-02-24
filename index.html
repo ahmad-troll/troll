@@ -1,12 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>System Update</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سؤال مهم</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin-top: 20vh; 
+            background-color: #f0f0f0; 
+        }
+        h1 { color: #333; font-size: 3em; }
+        button { 
+            font-size: 24px; 
+            padding: 15px 40px; 
+            margin: 20px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: bold;
+        }
+        #btn-yes { background-color: #4CAF50; color: white; }
+        #btn-no { background-color: #f44336; color: white; }
+        #message { 
+            margin-top: 30px; 
+            font-size: 30px; 
+            font-weight: bold; 
+        }
+    </style>
 </head>
 <body>
-    <h1>Downloading private files... Do not turn off your computer.</h1>
-    <div class="loading"></div>
+
+    <h1>هل تحب إيمان؟</h1>
+    
+    <button id="btn-yes" onclick="answerYes()">نعم</button>
+    <button id="btn-no" onclick="answerNo()">لا</button>
+    
+    <div id="message"></div>
+
+    <script>
+        // Set up the browser's internal audio system for the error sound
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playErrorSound() {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            // Create a harsh, low buzz sound
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(100, audioCtx.currentTime); 
+            
+            // Set volume
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            // Play for 0.4 seconds
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.4); 
+        }
+
+        function answerYes() {
+            document.getElementById('message').innerText = 'غصباً عنك! 😎';
+            document.getElementById('message').style.color = '#4CAF50';
+        }
+
+        function answerNo() {
+            playErrorSound();
+            document.getElementById('message').innerText = 'خطأ... حاول مرة أخرى!';
+            document.getElementById('message').style.color = '#f44336';
+        }
+    </script>
+
 </body>
 </html>
