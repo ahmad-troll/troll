@@ -52,7 +52,6 @@
             box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
         }
         
-        /* Updated to handle video instead of GIF */
         #video-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: black; z-index: 9999;
@@ -68,7 +67,7 @@
 
     <div id="main-content">
         <div id="timer">10</div>
-        <h1 id="question-text">هل تحب إيمان؟</h1>
+        <h1 id="question-text">هل تحب يسرى؟</h1>
         
         <div id="message"></div>
         
@@ -106,10 +105,9 @@
 
             videoTimeout = setTimeout(() => {
                 clearInterval(moveYesInterval);
-                dramaticAudio.pause(); // Stops background music so it doesn't overlap with video audio
+                dramaticAudio.pause(); 
                 document.getElementById('main-content').style.display = 'none';
                 
-                // Show and play the video
                 document.getElementById('video-screen').style.display = 'block';
                 document.getElementById('troll-video').play();
             }, 10000);
