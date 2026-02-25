@@ -52,17 +52,17 @@
             box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
         }
         
-        #video-screen {
+        #gif-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: black; z-index: 9999;
         }
-        #video-screen video { width: 100vw; height: 100vh; object-fit: cover; }
+        #gif-screen img { width: 100vw; height: 100vh; object-fit: cover; }
     </style>
 </head>
 <body>
 
-    <div id="video-screen">
-        <video id="troll-video" src="video.mp4" loop playsinline></video>
+    <div id="gif-screen">
+        <img src="goofy-silly.gif" alt="Troll GIF">
     </div>
 
     <div id="main-content">
@@ -80,7 +80,7 @@
     <script>
         let timerStarted = false;
         let timeRemaining = 10;
-        let countdownInterval, videoTimeout, moveYesInterval;
+        let countdownInterval, gifTimeout, moveYesInterval;
         
         let dramaticAudio = new Audio('dramatic.mp3');
         dramaticAudio.loop = true;
@@ -103,13 +103,11 @@
                 if (timeRemaining <= 0) clearInterval(countdownInterval);
             }, 1000);
 
-            videoTimeout = setTimeout(() => {
+            gifTimeout = setTimeout(() => {
                 clearInterval(moveYesInterval);
                 dramaticAudio.pause(); 
                 document.getElementById('main-content').style.display = 'none';
-                
-                document.getElementById('video-screen').style.display = 'block';
-                document.getElementById('troll-video').play();
+                document.getElementById('gif-screen').style.display = 'block';
             }, 10000);
 
             const yesBtn = document.getElementById('btn-yes');
@@ -127,7 +125,7 @@
         function answerYes() {
             if (timerStarted) {
                 clearInterval(countdownInterval);
-                clearTimeout(videoTimeout);
+                clearTimeout(gifTimeout);
                 clearInterval(moveYesInterval);
                 dramaticAudio.pause(); 
                 document.getElementById('timer').style.display = 'none';
