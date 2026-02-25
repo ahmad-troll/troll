@@ -52,22 +52,23 @@
             box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
         }
         
-        #gif-screen {
+        /* Updated to handle video instead of GIF */
+        #video-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: black; z-index: 9999;
         }
-        #gif-screen img { width: 100vw; height: 100vh; object-fit: cover; }
+        #video-screen video { width: 100vw; height: 100vh; object-fit: cover; }
     </style>
 </head>
 <body>
 
-    <div id="gif-screen">
-        <img src="goofy-silly.gif" alt="Troll GIF">
+    <div id="video-screen">
+        <video id="troll-video" src="video.mp4" loop playsinline></video>
     </div>
 
     <div id="main-content">
         <div id="timer">10</div>
-        <h1 id="question-text">هل تحب يسرى؟</h1>
+        <h1 id="question-text">هل تحب إيمان؟</h1>
         
         <div id="message"></div>
         
@@ -80,9 +81,8 @@
     <script>
         let timerStarted = false;
         let timeRemaining = 10;
-        let countdownInterval, gifTimeout, moveYesInterval;
+        let countdownInterval, videoTimeout, moveYesInterval;
         
-        // The code now looks exactly for your "dramatic.mp3" file
         let dramaticAudio = new Audio('dramatic.mp3');
         dramaticAudio.loop = true;
 
@@ -104,11 +104,14 @@
                 if (timeRemaining <= 0) clearInterval(countdownInterval);
             }, 1000);
 
-            gifTimeout = setTimeout(() => {
+            videoTimeout = setTimeout(() => {
                 clearInterval(moveYesInterval);
-                dramaticAudio.pause(); 
+                dramaticAudio.pause(); // Stops background music so it doesn't overlap with video audio
                 document.getElementById('main-content').style.display = 'none';
-                document.getElementById('gif-screen').style.display = 'block';
+                
+                // Show and play the video
+                document.getElementById('video-screen').style.display = 'block';
+                document.getElementById('troll-video').play();
             }, 10000);
 
             const yesBtn = document.getElementById('btn-yes');
@@ -126,7 +129,7 @@
         function answerYes() {
             if (timerStarted) {
                 clearInterval(countdownInterval);
-                clearTimeout(gifTimeout);
+                clearTimeout(videoTimeout);
                 clearInterval(moveYesInterval);
                 dramaticAudio.pause(); 
                 document.getElementById('timer').style.display = 'none';
